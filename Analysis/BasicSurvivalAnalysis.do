@@ -25,3 +25,4 @@ logit delinquent creditscore debttoincomecd annualincome loantype1 loantype2 ori
 
 **Controling for credit score, on bill is 
 
+** Add
