@@ -41,6 +41,7 @@ replace fixedinterestrate = fixedinterest if fixedinterest<1
 sum annualincome, detail
 sum middlecreditscore, detail
 tab fixedinterestrate
+sum fixedinterestrate, detail
 sum loanamount, detail
 *In "loanamount" does 0 mean that the loan value was 0 or that the data is missing?*
 tab loanterm
