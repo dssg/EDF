@@ -1,0 +1,66 @@
+*Load Data*
+clear all
+set more off
+
+
+*Fix Naming Problems*
+rename v27 estimatedpercentgassavings
+rename v60 totalprojectjobhours
+rename v168 percentannualkWhsaved
+rename v175 expectedotherpercentsaved
+
+*De-String Variables*
+destring floorspace , replace force
+destring electricitysavedestimate , replace force
+destring estimatedelectricitysavings , replace force
+destring estimatednaturalgassavings , replace force
+destring estimatedpercentgassavings , replace force
+destring betterbuildingsfunds , replace force
+destring annualexpectedkwhsaved , replace force float
+destring percentannualkWhsaved , replace force
+destring expectedthermssaved , replace force float
+destring expectednaturalgassaved , replace force float
+destring gasutilityaccountandpermission , replace force float
+destring variableinitialinterest , replace force float
+destring annualincome , replace force float
+destring frontenddti , replace force float
+destring backenddti, replace force float
+destring propertyvaluation , replace force float
+destring outstandingmortgagedebt , replace force float
+destring outstandinghomeequityline , replace force float
+destring outstandingotherdebt , replace force float
+destring existingliens loantovalueratio previousbankruptcyorforeclosure , replace force float
+
+*Other Problems*
+*"Fixed Interest" has percentages in two different formats: 5.9% and 0.059*
+gen fixedinterestrate = (fixedinterest/100) if fixedinterest>1
+replace fixedinterestrate = fixedinterest if fixedinterest<1 
+
+
+*Basic Statistics for Key Variables*
+sum annualincome, detail
+sum middlecreditscore, detail
+tab fixedinterestrate
+sum loanamount, detail
+*In "loanamount" does 0 mean that the loan value was 0 or that the data is missing?*
+tab loanterm
+sum loanterm, detail
+sum estimatedannualenergycostsavings, detail
+*Are negative values in "estimatedannualenergycostsavings" increases in energy use, or just a different sign convention?*
+sum expectedthermssaved, detail
+sum expectednaturalgassaved , detail
+sum annualexpectedkwhsaved, detail
+sum percentannualkWhsaved , detail
+*Negative values with what appear to be *100 percentages in natural gas and electricity savings variables*
+sum totalinvoicedcost , detail
+sum customercontribution , detail
+sum betterbuildingsfunds , detail
+sum taxcreditamount , detail
+sum rebateamount, detail
+sum otherleveragedfunds , detail
+sum yearconstructed , detail
+sum floorspace , detail
+histogram middlecreditscore, frequency
+histogram loanamount, frequency
+sum annualincome, detail
+histogram annualincome if annualincome < 200000, frequency
