@@ -1,0 +1,20 @@
+*Load Data*
+clear all
+set more off
+insheet using "~\GCEA_data_7_15_13.csv"
+
+*Basic Descriptive Statistics*
+tab zip
+tab bbloanapprovaldate
+sum bb_loanamount, detail
+histogram bb_loanamount, bin(20) frequency
+sum loanterm, detail
+tab loanterm
+tab loaninterestrate
+sum creditscore, detail
+histogram creditscore if creditscore>100, bin(20) frequency
+gen annualincome = (homeownermonthlyincome * 12)
+sum annualincome, detail
+histogram annualincome, bin(20) frequency
+sum floorarea, detail
+histogram floorarea, bin(20) frequency
