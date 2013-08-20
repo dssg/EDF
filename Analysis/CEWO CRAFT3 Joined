@@ -1,0 +1,25 @@
+*Load Data*
+insheet using "~\CEWO_CRAFT3_JOINED_8_16_MATCHED_ONLY.csv", clear
+set more off
+
+*Establish Delinquency Variables*
+gen delinquent = 1 if days_past_due > 30
+replace delinquent = 0 if delinquent == .
+
+*Basic Descriptive Statistics*
+desc
+codebook loanapproveddate
+codebook loanamount
+histogram loanamount, frequency
+sum loanterm, detail
+sum fixedinterestrate, detail
+sum credit_score, detail
+histogram credit_score, frequency
+sum annualincome, detail
+histogram annualincome if annualincome < 200000, bin(20) frequency
+sum estimatedannualenergycostsavings, detail
+
+*Basic Delinquency Models*
+reg delinquent fixedinterestrate annualincome median_income credit_score loanterm loanamount
+logit delinquent fixedinterestrate annualincome median_income credit_score loanterm loanamount
+logit delinquent annualincome median_income credit_score loanterm loanamount
