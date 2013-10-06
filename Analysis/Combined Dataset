@@ -1,0 +1,40 @@
+*Load Data*
+clear all
+set more off
+insheet using "~\Combined Data Workbook.csv", clear
+
+*Clean Data*
+replace borrowerscreditscore = . if borrowerscreditscore < 300
+gen dti = (borrowersdti/100) if borrowersdti > 1
+replace borrowersdti = dti if borrowersdti > 1
+drop dti
+rename borrowerscreditscore credit_score
+rename borrowersdti dti
+rename borrowersannualincome annual_income
+
+
+*Organize Data*
+gen coded_source = 1 if datasource == "Oregon"
+replace coded_source = 2 if datasource == "NYSERDA"
+replace coded_source = 3 if datasource == "GCEA"
+replace coded_source = 4 if datasource == "PA Treasury"
+tab coded_source
+gen past_due = 1 if dayspastdue > 0
+replace past_due = 0 if dayspastdue == 0
+
+*Basic Descriptive Statistics*
+sum borrowerscreditscore, detail
+histogram borrowerscreditscore, frequency
+sum borrowersdti, detail
+histogram borrowersdti if borrowersdti < 0.8, frequency
+sum borrowersannualincome, detail
+histogram borrowersannualincome if borrowersannualincome < 250000, frequency
+sum loanterm, detail
+sum loaninterestrate, detail
+histogram loanterm, frequency
+histogram loaninterestrate if loaninterestrate < 10, frequency
+tab past_due
+sum dayspastdue if past_due==1, detail
+tab chargeoff
+sum chargeoffamount, detail
+histogram chargeoffamount if chargeoffamount < 20000, frequency
