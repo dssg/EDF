@@ -58,3 +58,9 @@ sum if Active==0 & ChargeOff==0
 *Paid Off Loans
 sum if Active==0 & ChargeOff==1
 *Charged Off Loans
+
+tab Active if DataSource!="GCEA"
+bysort DataSource: tab Active
+
+tab Current if Active==1 
+bysort DataSource: tab Current if Active==1
