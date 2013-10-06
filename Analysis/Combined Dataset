@@ -38,3 +38,23 @@ sum dayspastdue if past_due==1, detail
 tab chargeoff
 sum chargeoffamount, detail
 histogram chargeoffamount if chargeoffamount < 20000, frequency
+
+*Standardize Loan Status Fields*
+gen Active=.
+replace Active=1 if LoanStatus=="ACTIVE" | LoanStatus=="Outstanding" | LoanStatus=="Current"
+replace Active=1 if LoanStatus=="Not Pledged > 30 DPD" | LoanStatus=="30" | LoanStatus=="60" | LoanStatus=="90" | LoanStatus=="120"
+replace Active=0 if Active!=1
+
+gen Current=.
+replace Current=0 if LoanStatus=="Not Pledged > 30 DPD" | LoanStatus=="30" | LoanStatus=="60" | LoanStatus=="90" | LoanStatus=="120"
+replace Current=1 if Active==1 & Current!=0
+replace Current=0 if DaysPastDue!=0
+
+sum if Active==1 & Current==0
+*Deliquent Loans
+sum if Active==1 & Current==1
+*Current Loans
+sum if Active==0 & ChargeOff==0
+*Paid Off Loans
+sum if Active==0 & ChargeOff==1
+*Charged Off Loans
