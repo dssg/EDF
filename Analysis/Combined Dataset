@@ -103,10 +103,20 @@ sum DaysPastDue if Active==0 & ChargeOff==1, detail
 *Exploring change over time
 gen year=year(LoanApprovedDate)
 
+tab year if Active==1 & Current==0
+tab year if Active==1 & Current==1
+tab year if Active==0 & ChargeOff==0
+tab year if Active==0 & ChargeOff==1
+
 tab year if Active==1 & Current==0, summarize (LoanInterestRate)
 tab year if Active==1 & Current==1, summarize (LoanInterestRate)
 tab year if Active==0 & ChargeOff==0, summarize (LoanInterestRate)
 tab year if Active==0 & ChargeOff==1, summarize (LoanInterestRate)
+
+tab year if Active==1 & Current==0, summarize (BorrowersCreditScore)
+tab year if Active==1 & Current==1, summarize (BorrowersCreditScore)
+tab year if Active==0 & ChargeOff==0, summarize (BorrowersCreditScore)
+tab year if Active==0 & ChargeOff==1, summarize (BorrowersCreditScore)
 
 *How can we graph this change over time??? (the code below does not work)
 egen MeanInterestRate = mean(LoanInterestRate), by (year)
