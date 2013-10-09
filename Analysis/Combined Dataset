@@ -64,3 +64,59 @@ bysort DataSource: tab Active
 
 tab Current if Active==1 
 bysort DataSource: tab Current if Active==1
+
+sum BorrowersCreditScore if Active==1 & Current==0, detail 
+sum BorrowersCreditScore if Active==1 & Current==1, detail
+sum BorrowersCreditScore if Active==0 & ChargeOff==0, detail
+sum BorrowersCreditScore if Active==0 & ChargeOff==1, detail
+
+sum BorrowersDTI if Active==1 & Current==0 & DataSource!="Oregon", detail
+sum BorrowersDTI if Active==1 & Current==1 & DataSource!="Oregon", detail
+sum BorrowersDTI if Active==0 & ChargeOff==0 & DataSource!="Oregon", detail
+sum BorrowersDTI if Active==0 & ChargeOff==1 & DataSource!="Oregon", detail
+
+sum BorrowersAnnualIncome if Active==1 & Current==0 & DataSource!="PA Treasury", detail
+sum BorrowersAnnualIncome if Active==1 & Current==1 & DataSource!="PA Treasury", detail
+sum BorrowersAnnualIncome if Active==0 & ChargeOff==0 & DataSource!="PA Treasury", detail
+sum BorrowersAnnualIncome if Active==0 & ChargeOff==1 & DataSource!="PA Treasury", detail
+
+sum LoanAmount if Active==1 & Current==0, detail
+sum LoanAmount if Active==1 & Current==1, detail
+sum LoanAmount if Active==0 & ChargeOff==0, detail
+sum LoanAmount if Active==0 & ChargeOff==1, detail
+
+sum LoanInterestRate if Active==1 & Current==0, detail
+sum LoanInterestRate if Active==1 & Current==1, detail
+sum LoanInterestRate if Active==0 & ChargeOff==0, detail
+sum LoanInterestRate if Active==0 & ChargeOff==1, detail
+
+sum LoanTerm if Active==1 & Current==0, detail
+sum LoanTerm if Active==1 & Current==1, detail
+sum LoanTerm if Active==0 & ChargeOff==0, detail
+sum LoanTerm if Active==0 & ChargeOff==1, detail
+
+sum DaysPastDue if Active==1 & Current==0, detail
+sum DaysPastDue if Active==1 & Current==1, detail
+sum DaysPastDue if Active==0 & ChargeOff==0, detail
+sum DaysPastDue if Active==0 & ChargeOff==1, detail
+
+*Exploring change over time
+gen year=year(LoanApprovedDate)
+
+tab year if Active==1 & Current==0, summarize (LoanInterestRate)
+tab year if Active==1 & Current==1, summarize (LoanInterestRate)
+tab year if Active==0 & ChargeOff==0, summarize (LoanInterestRate)
+tab year if Active==0 & ChargeOff==1, summarize (LoanInterestRate)
+
+*How can we graph this change over time??? (the code below does not work)
+egen MeanInterestRate = mean(LoanInterestRate), by (year)
+egen tag = tag(year)
+egen MeanInterestRateCurrent = mean(LoanInterestRate) if Active==1 & Current==1, by (year)
+egen MeanInterestRateDelinq = mean(LoanInterestRate) if Active==1 & Current==0, by (year)
+egen MeanInterestRatePaid = mean(LoanInterestRate) if Active==0 & ChargeOff==0, by (year)
+egen MeanInterestRateCharged = mean(LoanInterestRate) if Active==0 & ChargeOff==1, by (year)
+egen tag1=tag(MeanInterestRateCharged)
+egen tag2=tag(MeanInterestRatePaid)
+egen tag3=tag(MeanInterestRateDelinq)
+egen tag4=tag(MeanInterestRateCurrent)
+
