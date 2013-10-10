@@ -98,7 +98,8 @@ sum LoanTerm if Active==0 & ChargeOff==1, detail
 sum DaysPastDue if Active==1 & Current==0, detail
 sum DaysPastDue if Active==1 & Current==1, detail
 sum DaysPastDue if Active==0 & ChargeOff==0, detail
-sum DaysPastDue if Active==0 & ChargeOff==1, detail
+sum DaysPastDue if Active==0 & ChargeOff==1 & DaysPastDue>0, detail
+
 
 *Exploring change over time
 gen year=year(LoanApprovedDate)
