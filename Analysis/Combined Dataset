@@ -119,6 +119,32 @@ tab year if Active==1 & Current==1, summarize (BorrowersCreditScore)
 tab year if Active==0 & ChargeOff==0, summarize (BorrowersCreditScore)
 tab year if Active==0 & ChargeOff==1, summarize (BorrowersCreditScore)
 
+
+*Exploring change over time (Alternative)*
+gen year = 2009 if loanapproveddate > 39814 & loanapproveddate < 40179
+replace year = 2010 if loanapproveddate > 40179 & loanapproveddate < 40544
+replace year = 2011 if loanapproveddate > 40544 & loanapproveddate < 40909
+replace year = 2012 if loanapproveddate > 40909 & loanapproveddate < 41275
+replace year = 2013 if loanapproveddate > 41275 & loanapproveddate < 41640
+tab year
+bysort datasource: tab year
+bysort year: sum credit_score, detail
+
+bysort datasource: sum credit_score if year == 2009, detail
+bysort datasource: sum credit_score if year == 2010, detail
+bysort datasource: sum credit_score if year == 2011, detail
+bysort datasource: sum credit_score if year == 2012, detail
+bysort datasource: sum credit_score if year == 2013, detail
+
+bysort datasource: sum loanamount if year == 2010, detail
+bysort datasource: sum loanamount if year == 2011, detail
+bysort datasource: sum loanamount if year == 2012, detail
+bysort datasource: sum loanamount if year == 2013, detail
+
+bysort year: tab chargeoff
+bysort year: tab past_due
+
+
 *How can we graph this change over time??? (the code below does not work)
 egen MeanInterestRate = mean(LoanInterestRate), by (year)
 egen tag = tag(year)
