@@ -1,0 +1,150 @@
+*Load Data*
+clear all
+set more off
+insheet using "U:\EPIC\EDF_Loan_Project\Combined Data Workbook.csv", clear
+
+*Clean Data*
+replace borrowerscreditscore = . if borrowerscreditscore < 300
+gen dti = (borrowersdti/100) if borrowersdti > 1
+replace borrowersdti = dti if borrowersdti > 1
+drop dti
+rename borrowerscreditscore credit_score
+rename borrowersdti dti
+rename borrowersannualincome annual_income
+
+
+*Organize Data*
+gen coded_source = 1 if datasource == "Oregon"
+replace coded_source = 2 if datasource == "NYSERDA"
+replace coded_source = 3 if datasource == "GCEA"
+replace coded_source = 4 if datasource == "PA Treasury"
+tab coded_source
+gen past_due = 1 if dayspastdue > 0
+replace past_due = 0 if dayspastdue == 0
+replace chargeoffdate = (lastpaymentdate + 120) if coded_source == 2 & chargeoff == 1
+
+gen Active=.
+replace Active=1 if loanstatus=="ACTIVE" | loanstatus=="Outstanding" | loanstatus=="Current"
+replace Active=1 if loanstatus=="Not Pledged > 30 DPD" | loanstatus=="30" | loanstatus=="60" | loanstatus=="90" | loanstatus=="120"
+replace Active=0 if Active!=1
+
+gen Current=.
+replace Current=0 if loanstatus=="Not Pledged > 30 DPD" | loanstatus=="30" | loanstatus=="60" | loanstatus=="90" | loanstatus=="120"
+replace Current=1 if Active==1 & Current!=0
+replace Current=0 if dayspastdue!=0
+
+*Exploring change over time
+gen year = 2009 if loanapproveddate > 39814 & loanapproveddate < 40179
+replace year = 2010 if loanapproveddate > 40179 & loanapproveddate < 40544
+replace year = 2011 if loanapproveddate > 40544 & loanapproveddate < 40909
+replace year = 2012 if loanapproveddate > 40909 & loanapproveddate < 41275
+replace year = 2013 if loanapproveddate > 41275 & loanapproveddate < 41640
+
+*Exploring Chargeoff and Payoff Risk*
+
+*Generate Descriptive Variables*
+gen loan_age = ( 41486 - loanapproveddate )
+gen paidoff = 1 if currentprincipalbalance == 0 & chargeoff == 0
+replace paidoff = 0 if paidoff == .
+gen mo_36_contract_payoff_date = (loanapproveddate + 1096) if loanterm == 36
+replace loan_age = 1096 if loanterm == 36 & mo_36_contract_payoff_date < 41486 & paidoff == 1
+gen payoff_date = lastpaymentdate if paidoff == 1
+gen age_at_payoff = ( payoff_date - loanapproveddate ) if paidoff == 1
+gen early_payoff = 1 if paidoff == 1 & loanterm == 36 & age_at_payoff < 1096
+replace early_payoff = 1 if paidoff == 1 & loanterm == 60 & age_at_payoff < 2192
+replace early_payoff = 1 if paidoff == 1 & loanterm > 60
+replace early_payoff = 0 if early_payoff == .
+gen age_at_chargeoff = ( chargeoffdate - loanapproveddate )
+sum age_at_chargeoff, detail
+
+*Summarize Descriptive Variables*
+sum loan_age, detail
+replace loan_age = . if loan_age < 0
+sum loan_age, detail
+bysort datasource: sum loan_age, detail
+histogram loan_age, frequency
+
+
+*Generate Age Greater Than Bins for 120-Day Risk Analysis*
+gen age_120 = 1 if loan_age > 120
+replace age_120 = 0 if age_120 == .
+gen age_240 = 1 if loan_age > 240
+replace age_240 = 0 if age_240 == .
+gen age_360 = 1 if loan_age > 360
+replace age_360 = 0 if age_360 == .
+gen age_480 = 1 if loan_age > 480
+replace age_480 = 0 if age_480 == .
+gen age_600 = 1 if loan_age > 600
+replace age_600 = 0 if age_600 == .
+gen age_720 = 1 if loan_age > 720
+replace age_720 = 0 if age_720 == .
+gen age_840 = 1 if loan_age > 840
+replace age_840 = 0 if age_840 == .
+gen age_960 = 1 if loan_age > 960
+replace age_960 = 0 if age_960 == .
+gen age_1080 = 1 if loan_age > 1080
+replace age_1080 = 0 if age_1080 == .
+gen age_1200 = 1 if loan_age > 1200
+replace age_1200 = 0 if age_1200 == .
+gen age_1320 = 1 if loan_age > 1320
+replace age_1320 = 0 if age_1320 == .
+gen age_1440 = 1 if loan_age > 1440
+replace age_1440 = 0 if age_1440 == .
+gen age_1560 = 1 if loan_age > 1560
+replace age_1560 = 0 if age_1560 == .
+
+gen chargeoff_age_bin = 120 if age_at_chargeoff < 120
+replace chargeoff_age_bin = 240 if age_at_chargeoff < 240 & age_at_chargeoff >=120
+replace chargeoff_age_bin = 360 if age_at_chargeoff < 360 & age_at_chargeoff >=240
+replace chargeoff_age_bin = 480 if age_at_chargeoff < 480 & age_at_chargeoff >=360
+replace chargeoff_age_bin = 600 if age_at_chargeoff < 600 & age_at_chargeoff >=480
+replace chargeoff_age_bin = 720 if age_at_chargeoff < 720 & age_at_chargeoff >=600
+replace chargeoff_age_bin = 840 if age_at_chargeoff < 840 & age_at_chargeoff >=720
+replace chargeoff_age_bin = 960 if age_at_chargeoff < 960 & age_at_chargeoff >=840
+replace chargeoff_age_bin = 1080 if age_at_chargeoff < 1080 & age_at_chargeoff >=960
+replace chargeoff_age_bin = 1200 if age_at_chargeoff < 1200 & age_at_chargeoff >=1080
+replace chargeoff_age_bin = 1320 if age_at_chargeoff < 1320 & age_at_chargeoff >=1200
+
+gen early_payoff_age_bin = 120 if age_at_payoff < 120
+replace early_payoff_age_bin = 240 if age_at_payoff < 240 & age_at_payoff >=120 & early_payoff == 1
+replace early_payoff_age_bin = 360 if age_at_payoff< 360 & age_at_payoff >=240 & early_payoff == 1
+replace early_payoff_age_bin = 480 if age_at_payoff < 480 & age_at_payoff >=360 & early_payoff == 1
+replace early_payoff_age_bin = 600 if age_at_payoff < 600 & age_at_payoff >=480 & early_payoff == 1
+replace early_payoff_age_bin = 720 if age_at_payoff < 720 & age_at_payoff >=600 & early_payoff == 1
+replace early_payoff_age_bin = 840 if age_at_payoff < 840 & age_at_payoff >=720 & early_payoff == 1
+replace early_payoff_age_bin = 960 if age_at_payoff < 960 & age_at_payoff >=840 & early_payoff == 1
+replace early_payoff_age_bin = 1080 if age_at_payoff < 1080 & age_at_payoff >=960 & early_payoff == 1
+replace early_payoff_age_bin = 1200 if age_at_payoff < 1200 & age_at_payoff >=1080 & early_payoff == 1
+replace early_payoff_age_bin = 1320 if age_at_payoff < 1320 & age_at_payoff >=1200 & early_payoff == 1
+
+*Summarize variables*
+bysort datasource: tab early_payoff
+bysort datasource: sum age_at_payoff if early_payoff == 1, detail
+sum age_at_payoff if early_payoff == 1
+sum age_at_payoff if early_payoff == 1, detail
+sum age_at_payoff if loanterm ==36, detail
+sum age_at_payoff if loanterm ==60, detail
+sum age_at_payoff if loanterm ==120, detail
+sum age_at_payoff if loanterm ==180, detail
+tab loanterm
+sum age_at_payoff if loanterm > 240, detail
+tab loanterm if loanterm > 240
+tab loanterm if loanterm >= 240
+bysort datasource: tab chargeoff
+tab chargeoff
+bysort loanterm: tab early_payoff if coded_source == 4
+bysort loanterm: sum early_payoff if coded_source == 4, detail
+bysort loanterm: sum age_at_payoff if coded_source == 4 & early_payoff ==1, detail
+bysort loanterm: sum early_payoff if coded_source == 1, detail
+bysort loanterm: tab early_payoff if coded_source == 1
+tab early_payoff if coded_source == 1 & loanterm > 55 & loanterm < 65
+tab early_payoff if coded_source == 1 & loanterm > 115 & loanterm < 125
+tab early_payoff if coded_source == 1 & loanterm > 175 & loanterm < 185
+tab early_payoff if coded_source == 1 & loanterm > 235 & loanterm < 245
+tab early_payoff if coded_source == 1 & loanterm > 235
+sum age_at_payoff if early_payoff == 1 & coded_source == 1 & loanterm > 235
+sum age_at_payoff if early_payoff == 1 & coded_source == 1 & loanterm > 235, detail
+sum age_at_payoff if early_payoff == 1 & coded_source == 1 & loanterm > 55 & loanterm < 65, detail
+bysort loanterm: tab early_payoff if coded_source ==2
+bysort loanterm: sum age_at_payoff if early_payoff ==1 & coded_source ==2, detail
+
