@@ -157,3 +157,13 @@ egen tag2=tag(MeanInterestRatePaid)
 egen tag3=tag(MeanInterestRateDelinq)
 egen tag4=tag(MeanInterestRateCurrent)
 
+*Code for Graphs and Figures*
+histogram borrowerscreditscore, frequency
+histogram borrowersdti if borrowersdti < 0.8, frequency
+histogram borrowersannualincome if borrowersannualincome < 250000, frequency
+histogram loanterm, frequency
+histogram loaninterestrate if loaninterestrate < 10, frequency
+histogram chargeoffamount if chargeoffamount < 20000, frequency
+twoway (kdensity credit_score if coded_source == 1, lcolor(black)) (kdensity credit_score if coded_source == 2, lcolor(red)) (kdensity credit_score if coded_source == 3, lcolor(green)) (kdensity credit_score if coded_source == 4, lcolor(blue))
+
+
